@@ -1,0 +1,60 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+}
+
+plugins {
+  id "maven-publish"
+  id 'java-gradle-plugin'
+  id 'com.gradle.plugin-publish' version '0.10.0'
+}
+
+apply plugin: "groovy"
+
+group = "io.gatling.frontline"
+version = file("version.txt").text.trim()
+
+ext.isSnapshot = version.endsWith("SNAPSHOT")
+
+repositories {
+  jcenter()
+  mavenCentral()
+}
+
+// FIXME ?
+//configurations.compile.dependencies.remove dependencies.gradleApi()
+
+pluginBundle {
+  website = 'https://gatling.io'
+  vcsUrl = 'https://github.com/gatling/frontline-gradle-plugin'
+  tags = ['gatling', 'frontline']
+}
+
+dependencies {
+  compile gradleApi()
+  compile "com.github.jengelman.gradle.plugins:shadow:4.0.2"
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      groupId = "io.gatling.frontline"
+      artifactId = "frontline-gradle-plugin"
+      version = project.version
+
+      from components.java
+    }
+  }
+}
+
+gradlePlugin {
+  plugins {
+    greetingsPlugin {
+      id = ''
+      displayName = '<short displayable name for plugin>'
+      description = '<Good human-readable description of what your plugin is about>'
+      implementationClass = '<your plugin class>'
+    }
+  }
+}
