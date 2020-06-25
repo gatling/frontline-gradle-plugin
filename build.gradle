@@ -22,9 +22,6 @@ repositories {
   mavenCentral()
 }
 
-// FIXME ?
-//configurations.compile.dependencies.remove dependencies.gradleApi()
-
 pluginBundle {
   website = 'https://gatling.io'
   vcsUrl = 'https://github.com/gatling/frontline-gradle-plugin'
@@ -32,8 +29,8 @@ pluginBundle {
 }
 
 dependencies {
-  compile gradleApi()
-  compile "com.github.jengelman.gradle.plugins:shadow:4.0.2"
+  implementation gradleApi()
+  implementation "com.github.jengelman.gradle.plugins:shadow:5.2.0"
 }
 
 publishing {
@@ -44,17 +41,6 @@ publishing {
       version = project.version
 
       from components.java
-    }
-  }
-}
-
-gradlePlugin {
-  plugins {
-    greetingsPlugin {
-      id = ''
-      displayName = '<short displayable name for plugin>'
-      description = '<Good human-readable description of what your plugin is about>'
-      implementationClass = '<your plugin class>'
     }
   }
 }
