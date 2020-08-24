@@ -1,39 +1,7 @@
-buildscript {
-  repositories {
-    jcenter()
-  }
-}
-
 plugins {
-  id "maven"
-  id 'signing'
-}
-
-apply plugin: "groovy"
-apply plugin: 'maven'
-apply plugin: 'signing'
-
-group = "io.gatling.frontline"
-version = file("version.txt").text.trim()
-
-ext.isSnapshot = version.endsWith("SNAPSHOT")
-
-task javadocJar(type: Jar) {
-  classifier = 'javadoc'
-  from javadoc
-}
-
-task sourcesJar(type: Jar) {
-  classifier = 'sources'
-  from sourceSets.main.allSource
-}
-
-artifacts {
-  archives javadocJar, sourcesJar
-}
-
-signing {
-  sign configurations.archives
+  id 'java-gradle-plugin'
+  id 'com.gradle.plugin-publish' version '0.12.0'
+  id 'groovy'
 }
 
 repositories {
@@ -46,48 +14,19 @@ dependencies {
   implementation "com.github.jengelman.gradle.plugins:shadow:5.2.0"
 }
 
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+pluginBundle {
+  website = 'https://github.com/gatling/frontline-gradle-plugin'
+  vcsUrl = 'https://github.com/gatling/frontline-gradle-plugin'
+  tags = ['frontline', 'gatling', 'load test', 'stress test', 'performance test', 'scala']
+}
 
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
-
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
-
-      pom.project {
-        name 'FrontLine Gradle Plugin'
-        packaging 'jar'
-        description 'A plugin for packaging bundle to be deployed with Gatling FrontLine'
-        url 'https://github.com/gatling/frontline-gradle-plugin'
-        scm {
-          url 'https://github.com/gatling/frontline-gradle-plugin'
-          connection 'scm:git:git://github.com/gatling/frontline-gradle-plugin.git'
-          developerConnection 'scm:git:ssh://git@github.com:gatling/frontline-gradle-plugin.git'
-        }
-        licenses {
-          license {
-            name 'The Apache License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-          }
-        }
-        developers {
-          developer {
-            id 'slandelle'
-            name 'Stéphane Landelle'
-            email 'slandelle@gatling.io'
-          }
-          developer {
-            id 'notdryft'
-            name 'Guillaume Corré'
-            email 'gcorre@gatling.io'
-          }
-        }
-      }
+gradlePlugin {
+  plugins {
+    frontLinePlugin {
+      id = 'io.gatling.frontline.gradle'
+      displayName = 'Gatling FrontLine integration with gradle'
+      description = 'A plugin for packaging bundle to be deployed with Gatling FrontLine'
+      implementationClass = 'io.gatling.frontline.gradle.FrontLinePlugin'
     }
   }
 }
