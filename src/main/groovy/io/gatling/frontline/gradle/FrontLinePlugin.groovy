@@ -1,23 +1,29 @@
 package io.gatling.frontline.gradle
 
-import org.gradle.api.*
-import org.gradle.api.plugins.JavaPluginConvention
+
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
 class FrontLinePlugin implements Plugin<Project> {
 
-  @Override
-  void apply(Project project) {
-    JavaPluginConvention convention = project.convention.getPlugin(JavaPluginConvention)
-    FrontLineShadowJar shadow = project.tasks.create(name: "testJar", type: FrontLineShadowJar)
+    @Override
+    void apply(Project project) {
+        if (!project.plugins.findPlugin('io.gatling.gradle')) {
+            project.getLogger().info("io.gatling.gradle not found, applying it")
+            project.pluginManager.apply('io.gatling.gradle')
+        }
 
-    shadow.conventionMapping.with {
-      map("classifier") {
-        "tests"
-      }
+        FrontLineShadowJar frontLineJar = project.tasks.create(name: "frontLineJar", type: FrontLineShadowJar)
+
+        frontLineJar.conventionMapping.with {
+            map("classifier") {
+                "tests"
+            }
+        }
+
+        frontLineJar.from(project.sourceSets.gatling.output)
+        frontLineJar.configurations = [
+                project.configurations.gatlingCompileClasspath
+        ]
     }
-    shadow.from(convention.sourceSets.test.output)
-    shadow.configurations = [
-      project.configurations.testCompileClasspath
-    ]
-  }
 }
