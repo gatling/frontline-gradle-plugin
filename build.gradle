@@ -6,12 +6,10 @@ buildscript {
 
 plugins {
   id "maven"
+  id 'java-gradle-plugin'
+  id 'groovy'
   id 'signing'
 }
-
-apply plugin: "groovy"
-apply plugin: 'maven'
-apply plugin: 'signing'
 
 group = "io.gatling.frontline"
 version = file("version.txt").text.trim()
@@ -88,6 +86,17 @@ uploadArchives {
           }
         }
       }
+    }
+  }
+}
+
+gradlePlugin {
+  plugins {
+    frontlinePlugin {
+      id = "io.gatling.frontline.gradle"
+      implementationClass = 'io.gatling.frontline.gradle.FrontLinePlugin'
+      displayName = "FrontLine plugin for Gradle"
+      description = "FrontLine plugin for Gradle"
     }
   }
 }
