@@ -12,12 +12,16 @@ import org.gradle.api.tasks.TaskAction
 @CacheableTask
 class FrontLineShadowJar extends ShadowJar {
 
-    private ResolvedConfiguration resolvedConfiguration() {
-        return project.configurations.testCompileClasspath.resolvedConfiguration
+    private List<ResolvedConfiguration> resolvedConfigurations() {
+        def result = [project.configurations.testCompileClasspath.resolvedConfiguration]
+        if (project.configurations.hasProperty("gatlingCompileClasspath")) {
+            result << project.configurations.gatlingCompileClasspath.resolvedConfiguration
+        }
+        return result
     }
 
     private String gatlingVersion() {
-        for (artifact in resolvedConfiguration().resolvedArtifacts) {
+        for (artifact in resolvedConfigurations()*.resolvedArtifacts.flatten()) {
             def id = artifact.moduleVersion.id
             if (id.group == "io.gatling" && id.name == "gatling-app") {
                 getLogger().debug("Detection Gatling compile version: {}", id.version)
@@ -40,7 +44,7 @@ class FrontLineShadowJar extends ShadowJar {
 
     private Set<File> gatlingDeps() {
         def acc = new HashSet<File>()
-        collectGatlingDepsRec(resolvedConfiguration().firstLevelModuleDependencies, acc)
+        collectGatlingDepsRec(resolvedConfigurations()*.firstLevelModuleDependencies.sum(), acc)
         return acc
     }
 

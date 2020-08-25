@@ -1,13 +1,16 @@
 package io.gatling.frontline.gradle
 
 import org.gradle.api.*
-import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.plugins.JavaLibraryPlugin
+import org.gradle.api.plugins.scala.ScalaPlugin
 
 class FrontLinePlugin implements Plugin<Project> {
 
   @Override
   void apply(Project project) {
-    JavaPluginConvention convention = project.convention.getPlugin(JavaPluginConvention)
+    project.getPluginManager().apply(JavaLibraryPlugin.class);
+    project.getPluginManager().apply(ScalaPlugin.class);
+
     FrontLineShadowJar shadow = project.tasks.create(name: "testJar", type: FrontLineShadowJar)
 
     shadow.conventionMapping.with {
@@ -15,7 +18,10 @@ class FrontLinePlugin implements Plugin<Project> {
         "tests"
       }
     }
-    shadow.from(convention.sourceSets.test.output)
+    shadow.from(project.sourceSets.test.output)
+    if(project.sourceSets.hasProperty("gatling")) {
+      shadow.from(project.sourceSets.gatling.output)
+    }
     shadow.configurations = [
       project.configurations.testCompileClasspath
     ]
