@@ -1,10 +1,10 @@
 package io.gatling.frontline.gradle
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.artifacts.ModuleIdentifier
 import org.gradle.api.artifacts.ResolvedConfiguration
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.file.FileCollection
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.TaskAction
@@ -12,12 +12,12 @@ import org.gradle.api.tasks.TaskAction
 @CacheableTask
 class FrontLineShadowJar extends ShadowJar {
 
-    private ResolvedConfiguration resolvedConfiguration() {
-        return project.configurations.testCompileClasspath.resolvedConfiguration
+    private ResolvedConfiguration getResolvedConfiguration() {
+        return project.configurations.gatlingCompileClasspath.resolvedConfiguration
     }
 
     private String gatlingVersion() {
-        for (artifact in resolvedConfiguration().resolvedArtifacts) {
+        for (artifact in getResolvedConfiguration().resolvedArtifacts.flatten()) {
             def id = artifact.moduleVersion.id
             if (id.group == "io.gatling" && id.name == "gatling-app") {
                 getLogger().debug("Detection Gatling compile version: {}", id.version)
@@ -27,40 +27,35 @@ class FrontLineShadowJar extends ShadowJar {
         throw new IllegalArgumentException("Couldn't locate io.gatling:gatling-app in dependencies")
     }
 
-    private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<File> acc) {
+    private void treeToSet(ResolvedDependency dep, Set<DependencyId> acc) {
+        def id = dep.module.id
+        acc.add(new DependencyId(id.group, id.name))
+        for (child in dep.children) {
+            treeToSet(child, acc)
+        }
+    }
+
+    private Set<DependencyId> collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<DependencyId> acc) {
         for (dep in deps) {
-            def id = dep.module.id
-            if (id.group == "io.gatling" || id.group == "io.gatling.highcharts" || id.group == "io.gatling.frontline") {
-                acc.addAll(dep.allModuleArtifacts.collect { it.file })
+            if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts", "io.gatling.frontline"]) {
+                treeToSet(dep, acc)
             } else {
                 collectGatlingDepsRec(dep.children, acc)
             }
         }
-    }
-
-    private Set<File> gatlingDeps() {
-        def acc = new HashSet<File>()
-        collectGatlingDepsRec(resolvedConfiguration().firstLevelModuleDependencies, acc)
-        return acc
+        acc
     }
 
     @Override
     @Classpath
     FileCollection getIncludedDependencies() {
-        def allDeps = new HashSet(configurations.files.flatten())
-        def gatlingDeps = gatlingDeps()
-        if (getLogger().isEnabled(LogLevel.DEBUG)) {
-            for (dep in gatlingDeps) {
-                getLogger().debug("Excluding Gatling dep {}", dep)
-            }
+        Set<DependencyId> gatlingDependencies = collectGatlingDepsRec(getResolvedConfiguration().getFirstLevelModuleDependencies(), new HashSet<DependencyId>())
+
+        Set<File> wantedFiles = getResolvedConfiguration().getFiles {
+            !it.hasProperty("module") || !gatlingDependencies.contains(new DependencyId(it.module))
         }
-        def nonGatlingDeps = allDeps - gatlingDeps
-        if (getLogger().isEnabled(LogLevel.DEBUG)) {
-            for (dep in nonGatlingDeps) {
-                getLogger().debug("Including non Gatling dep {}", dep)
-            }
-        }
-        return project.files(nonGatlingDeps)
+
+        project.files(wantedFiles)
     }
 
     @TaskAction
@@ -75,5 +70,38 @@ class FrontLineShadowJar extends ShadowJar {
                     "Gatling-Version": gatlingVersion)
         }
         super.copy()
+    }
+
+    private class DependencyId {
+        private String group
+        private String artifact
+
+        DependencyId(ModuleIdentifier moduleId) {
+            this(moduleId.group, moduleId.name)
+        }
+
+        DependencyId(String group, String artifact) {
+            this.group = group
+            this.artifact = artifact
+        }
+
+        boolean equals(o) {
+            if (this.is(o)) return true
+            if (getClass() != o.class) return false
+
+            DependencyId that = (DependencyId) o
+
+            if (artifact != that.artifact) return false
+            if (group != that.group) return false
+
+            return true
+        }
+
+        int hashCode() {
+            int result
+            result = (group != null ? group.hashCode() : 0)
+            result = 31 * result + (artifact != null ? artifact.hashCode() : 0)
+            return result
+        }
     }
 }

@@ -7,11 +7,15 @@ plugins {
 repositories {
   jcenter()
   mavenCentral()
+  maven {
+    url "https://plugins.gradle.org/m2/"
+  }
 }
 
 dependencies {
   implementation gradleApi()
   implementation "com.github.jengelman.gradle.plugins:shadow:5.2.0"
+  runtime "gradle.plugin.io.gatling.gradle:gatling-gradle-plugin:0.0.1-beta-5"
 }
 
 pluginBundle {
