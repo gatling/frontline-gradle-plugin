@@ -1,17 +1,12 @@
 # FrontLine Gradle plugin
+[![test-only](https://github.com/gatling/frontline-gradle-plugin/workflows/test-only/badge.svg?branch=master)](https://github.com/gatling/frontline-gradle-plugin/actions?query=branch%3Amaster)
+
+Gradle plugin to create a package in the format expected by
+[Gatling FrontLine](https://gatling.io/gatling-frontline/).
 
 ## Dependency
 
-This plugin apply `io.gatling.gradle`.
-
-When applying this `io.gatling.frontline.gradle`, you will be able to do all the configurations possible with the [`io.gatling.gradle` plugin](https://github.com/gatling/gatling-gradle-plugin)
-
-## Commands
-
-This plugin adds a new command to the gradle build: `frontLineJar`
-
-It creates a package in the format expected by [Gatling FrontLine](https://gatling.io/gatling-frontline/).
-
+This plugin applies `io.gatling.gradle`.
 
 ## Dev testing
 
@@ -26,12 +21,13 @@ Steps to be able to dev test this plugin:
 2. In a separate directory, create a toy project containing:
 
     * `settings.gradle`:
-    
+
       ```
       includeBuild '<path/to>/frontline-gradle-plugin'
       ```
 
     * `build.gradle`:
+
       ```groovy
       plugins {
         id 'java-library'
@@ -39,17 +35,12 @@ Steps to be able to dev test this plugin:
       }
 
       repositories {
-        mavenLocal()
+        mavenCentral()
         jcenter()
       }
 
       sourceCompatibility = 1.8
       targetCompatibility = 1.8
-        
-      repositories {
-        mavenLocal()
-        jcenter()
-      }
         
       tasks.withType(ScalaCompile) {
         scalaCompileOptions.forkOptions.with {
