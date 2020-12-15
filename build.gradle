@@ -15,7 +15,7 @@ repositories {
 dependencies {
   implementation gradleApi()
   implementation "com.github.jengelman.gradle.plugins:shadow:5.2.0"
-  runtime "gradle.plugin.io.gatling.gradle:gatling-gradle-plugin:3.4.0"
+  runtime "gradle.plugin.io.gatling.gradle:gatling-gradle-plugin:3.5.0"
 }
 
 pluginBundle {
