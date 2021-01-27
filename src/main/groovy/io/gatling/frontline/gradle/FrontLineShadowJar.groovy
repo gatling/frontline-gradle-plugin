@@ -12,6 +12,8 @@ import org.gradle.api.tasks.TaskAction
 @CacheableTask
 class FrontLineShadowJar extends ShadowJar {
 
+    private static final DependencyId NETTY_ALL = new DependencyId("io.netty", "netty-all")
+
     private ResolvedConfiguration getResolvedConfiguration() {
         return project.configurations.gatlingCompileClasspath.resolvedConfiguration
     }
@@ -35,7 +37,7 @@ class FrontLineShadowJar extends ShadowJar {
         }
     }
 
-    private Set<DependencyId> collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<DependencyId> acc) {
+    private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<DependencyId> acc) {
         for (dep in deps) {
             if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts", "io.gatling.frontline"]) {
                 treeToSet(dep, acc)
@@ -43,16 +45,21 @@ class FrontLineShadowJar extends ShadowJar {
                 collectGatlingDepsRec(dep.children, acc)
             }
         }
-        acc
+    }
+
+    private static boolean excludeDep(ModuleIdentifier moduleIdentifier, Set<DependencyId> gatlingDependencies) {
+        def dependency = new DependencyId(moduleIdentifier.group, moduleIdentifier.name)
+        dependency == NETTY_ALL || gatlingDependencies.contains(dependency)
     }
 
     @Override
     @Classpath
     FileCollection getIncludedDependencies() {
-        Set<DependencyId> gatlingDependencies = collectGatlingDepsRec(getResolvedConfiguration().getFirstLevelModuleDependencies(), new HashSet<DependencyId>())
+        Set<DependencyId> gatlingDependencies = new HashSet<DependencyId>()
+        collectGatlingDepsRec(getResolvedConfiguration().getFirstLevelModuleDependencies(), gatlingDependencies)
 
         Set<File> wantedFiles = getResolvedConfiguration().getFiles {
-            !it.hasProperty("module") || !gatlingDependencies.contains(new DependencyId(it.module))
+            !it.hasProperty("module") || !excludeDep(it.module, gatlingDependencies)
         }
 
         project.files(wantedFiles)
@@ -72,19 +79,16 @@ class FrontLineShadowJar extends ShadowJar {
         super.copy()
     }
 
-    private class DependencyId {
+    private static class DependencyId {
         private String group
         private String artifact
-
-        DependencyId(ModuleIdentifier moduleId) {
-            this(moduleId.group, moduleId.name)
-        }
 
         DependencyId(String group, String artifact) {
             this.group = group
             this.artifact = artifact
         }
 
+        @Override
         boolean equals(o) {
             if (this.is(o)) return true
             if (getClass() != o.class) return false
@@ -97,11 +101,17 @@ class FrontLineShadowJar extends ShadowJar {
             return true
         }
 
+        @Override
         int hashCode() {
             int result
             result = (group != null ? group.hashCode() : 0)
             result = 31 * result + (artifact != null ? artifact.hashCode() : 0)
             return result
+        }
+
+        @Override
+        String toString() {
+            return group + ":" + artifact
         }
     }
 }
