@@ -21,6 +21,8 @@ class FrontLinePlugin implements Plugin<Project> {
             }
         }
 
+        frontLineJar.exclude("META-INF/versions/*")
+
         frontLineJar.from(project.sourceSets.gatling.output)
         frontLineJar.configurations = [
                 project.configurations.gatlingCompileClasspath
