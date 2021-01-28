@@ -20,7 +20,7 @@ class FrontLineShadowJar extends ShadowJar {
         for (artifact in getResolvedConfiguration().resolvedArtifacts.flatten()) {
             def id = artifact.moduleVersion.id
             if (id.group == "io.gatling" && id.name == "gatling-app") {
-                getLogger().debug("Detection Gatling compile version: {}", id.version)
+                getLogger().debug("Detected Gatling compile version: {}", id.version)
                 return id.version
             }
         }
