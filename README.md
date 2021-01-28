@@ -30,21 +30,14 @@ Steps to be able to dev test this plugin:
 
       ```groovy
       plugins {
-        id 'java-library'
-        id 'io.gatling.frontline.gradle'
+         id 'io.gatling.frontline.gradle'
       }
-
+      
       repositories {
-        mavenCentral()
-        jcenter()
+         mavenCentral()
+         jcenter()
       }
-
+      
       sourceCompatibility = 1.8
       targetCompatibility = 1.8
-        
-      tasks.withType(ScalaCompile) {
-        scalaCompileOptions.forkOptions.with {
-          jvmArgs = ['-Xss100M']
-        }
-      }
       ```
