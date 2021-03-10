@@ -59,7 +59,7 @@ class FrontLineShadowJar extends ShadowJar {
         collectGatlingDepsRec(getResolvedConfiguration().getFirstLevelModuleDependencies(), gatlingDependencies)
 
         Set<File> wantedFiles = getResolvedConfiguration().getFiles {
-            !it.hasProperty("module") || !FrontLineShadowJar.excludeDep(it.module, gatlingDependencies)
+            !it.hasProperty("module") || !ModuleIdentifier.isInstance(it.module) || !FrontLineShadowJar.excludeDep(it.module, gatlingDependencies)
         }
 
         project.files(wantedFiles)
