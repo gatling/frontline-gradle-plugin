@@ -12,7 +12,7 @@ import org.gradle.api.tasks.TaskAction
 class FrontLineShadowJar extends ShadowJar {
 
     private ResolvedConfiguration getResolvedConfiguration() {
-        return project.configurations.gatlingCompileClasspath.resolvedConfiguration
+        project.configurations.gatlingRuntimeClasspath.resolvedConfiguration
     }
 
     private String gatlingVersion() {

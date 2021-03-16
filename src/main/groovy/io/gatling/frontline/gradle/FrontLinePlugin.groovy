@@ -25,7 +25,7 @@ class FrontLinePlugin implements Plugin<Project> {
 
         frontLineJar.from(project.sourceSets.gatling.output)
         frontLineJar.configurations = [
-                project.configurations.gatlingCompileClasspath
+                project.configurations.gatlingRuntimeClasspath
         ]
     }
 }
