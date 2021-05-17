@@ -21,7 +21,14 @@ class FrontLinePlugin implements Plugin<Project> {
             }
         }
 
-        frontLineJar.exclude("META-INF/versions/*")
+        frontLineJar.exclude(
+          "META-INF/LICENSE",
+          "META-INF/MANIFEST.MF",
+          "META-INF/versions/**",
+          "**/*.SF",
+          "**/*.DSA",
+          "**/*.RSA"
+        )
 
         frontLineJar.from(project.sourceSets.gatling.output)
         frontLineJar.configurations = [
