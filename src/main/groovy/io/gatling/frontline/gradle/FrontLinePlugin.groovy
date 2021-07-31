@@ -25,6 +25,7 @@ class FrontLinePlugin implements Plugin<Project> {
           "META-INF/LICENSE",
           "META-INF/MANIFEST.MF",
           "META-INF/versions/**",
+          "META-INF/maven/**",
           "**/*.SF",
           "**/*.DSA",
           "**/*.RSA"
